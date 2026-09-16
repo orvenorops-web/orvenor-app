@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#081F2D">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ORVENOR V6</title>
+<style>
+:root{
+  --navy:#081F2D;--navy2:#0E2E40;--gold:#D4A017;--bg:#F4F6F8;--card:#fff;--text:#14212B;
+  --muted:#6B7280;--green:#16A34A;--amber:#F59E0B;--red:#DC2626;--line:#E5E7EB;
+}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--bg);padding-bottom:88px}
+.top{background:linear-gradient(160deg,var(--navy),var(--navy2));color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 18px;border-radius:0 0 26px 26px}
+.brand{display:flex;align-items:center;justify-content:space-between}
+.word{font-weight:800;letter-spacing:.16em}.badge{font-size:11px;border:1px solid rgba(255,255,255,.25);padding:6px 9px;border-radius:999px;color:#f4d77a}
+.tag{font-size:13px;color:#cbd5e1;margin-top:5px}
+.hero{margin-top:18px}
+.hero h1{font-size:28px;line-height:1.05;margin:0 0 7px}
+.hero p{margin:0;color:#cbd5e1;font-size:14px}
+.tell{margin:16px 14px 0;background:#fff;border-radius:20px;padding:14px;box-shadow:0 10px 30px rgba(8,31,45,.12)}
+.tellrow{display:flex;gap:10px;align-items:center}
+.mic{width:48px;height:48px;border-radius:50%;border:0;background:var(--gold);font-size:21px}
+.tell input{border:0;outline:0;flex:1;font-size:15px;background:#f7f8fa;padding:13px 14px;border-radius:14px}
+.btn{border:0;border-radius:12px;padding:11px 14px;background:var(--navy);color:#fff;font-weight:700}
+.section{padding:18px 14px 0}
+.section h2{font-size:17px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border-radius:16px;padding:14px;border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.035)}
+.metric{font-size:26px;font-weight:800}.small{font-size:12px;color:var(--muted)}
+.item{display:flex;gap:11px;align-items:flex-start;background:#fff;padding:13px;border-radius:15px;border:1px solid var(--line);margin-bottom:9px}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:6px;background:var(--amber);flex:0 0 auto}
+.dot.green{background:var(--green)} .dot.red{background:var(--red)}
+.item strong{display:block;font-size:14px}.item span{font-size:12px;color:var(--muted)}
+.chips{display:flex;gap:7px;overflow:auto;padding-bottom:2px}.chip{white-space:nowrap;background:#fff;border:1px solid var(--line);padding:8px 11px;border-radius:999px;font-size:12px}
+.sheet{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.sheethead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.pill{font-size:10px;font-weight:700;padding:5px 7px;border-radius:999px;background:#FEF3C7;color:#92400E}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:8px 5px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:space-around}
+.nav button{background:none;border:0;font-size:11px;color:#65707a;padding:6px}.nav button.active{color:var(--navy);font-weight:800}.ico{font-size:20px;display:block;margin-bottom:2px}
+.page{display:none}.page.active{display:block}
+.overlay{position:fixed;inset:0;background:rgba(8,31,45,.62);display:none;align-items:flex-end;z-index:20}
+.overlay.show{display:flex}.sheetmodal{background:#fff;border-radius:24px 24px 0 0;padding:20px;width:100%;max-height:82vh;overflow:auto}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.approve{display:flex;gap:8px;margin-top:14px}.approve button{flex:1}
+.secondary{background:#EEF2F4;color:#25313a}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><div><div class="word">ORVENOR</div><div class="tag">People do the work. ORVENOR runs the rest.</div></div><div class="badge">V6 LIVE QUEUE</div></div>
+    <div class="hero"><h1 id="heroTitle">Today</h1><p id="heroSub">What needs your attention, without the noise.</p></div>
+  </div>
+
+  <div id="today" class="page active">
+    <div class="tell">
+      <div class="tellrow">
+        <button class="mic" onclick="fakeVoice()">🎙️</button>
+        <input id="commandInput" placeholder="Tell ORVENOR…" />
+        <button class="btn" onclick="runCommand()">Go</button>
+      </div>
+      <div class="small" id="commandStatus" style="margin-top:8px">Try: “Raise an RFI about the tie-in point.”</div>
+    </div>
+
+    <div class="section">
+      <div class="grid">
+        <div class="card"><div class="metric">4</div><div class="small">Needs attention</div></div>
+        <div class="card"><div class="metric">3</div><div class="small">Waiting approval</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Priority</h2>
+      <div id="liveTodayList"></div>
+      <div class="item" id="liveLatestCard" onclick="openLiveLatest()" style="border-color:#D4A017">
+        <span class="dot"></span>
+        <div style="flex:1">
+          <strong id="liveLatestTitle">Loading latest ORVENOR sheet…</strong>
+          <span id="liveLatestMeta">Connecting to live Sheet Engine</span>
+        </div>
+      </div>
+      <div class="item" onclick="openModal('RFI-DEMO-001')"><span class="dot red"></span><div><strong>Confirm tie-in point</strong><span>Project Engineer · due 18 Sep · from RFI</span></div></div>
+      <div class="item"><span class="dot"></span><div><strong>Verify hose certificate H-003</strong><span>Site Coordinator · due 17 Sep</span></div></div>
+      <div class="item"><span class="dot"></span><div><strong>Generator service due</strong><span>Equipment Lead · due 20 Sep</span></div></div>
+      <div class="item"><span class="dot green"></span><div><strong>Next-shift manning</strong><span>Supervisor · due today</span></div></div>
+    </div>
+
+    <div class="section">
+      <h2>Quick create</h2>
+      <div class="chips">
+        <div class="chip" onclick="preset('Create today’s daily report')">Daily Report</div>
+        <div class="chip" onclick="preset('Raise an RFI about the tie-in point')">RFI</div>
+        <div class="chip" onclick="preset('Create a TQ for the temporary hose route')">TQ</div>
+        <div class="chip" onclick="preset('Build a hose register')">Hose Register</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sheets" class="page">
+    <div class="section">
+      <h2>Sheets</h2>
+      <div class="sheet" onclick="openModal('DR-DEMO-001')"><div class="sheethead"><div><strong>Professional Daily Report</strong><div class="small">Synthetic Industrial Project</div></div><span class="pill">Review</span></div></div>
+      <div class="sheet" onclick="openModal('VAR-DEMO-001')"><div class="sheethead"><div><strong>Variation Evidence Sheet</strong><div class="small">Permit/access delay</div></div><span class="pill">Review</span></div></div>
+      <div class="sheet" onclick="openModal('TQ-DEMO-001')"><div class="sheethead"><div><strong>Technical Query</strong><div class="small">Temporary hose route</div></div><span class="pill">Review</span></div></div>
+      <div class="sheet" onclick="openModal('RFI-DEMO-001')"><div class="sheethead"><div><strong>RFI</strong><div class="small">Tie-in point confirmation</div></div><span class="pill">Review</span></div></div>
+      <div class="sheet"><div class="sheethead"><div><strong>Hose Register</strong><div class="small">4 synthetic hoses</div></div><span class="pill">Review</span></div></div>
+      <div class="sheet"><div class="sheethead"><div><strong>Equipment Register</strong><div class="small">4 synthetic assets</div></div><span class="pill">Review</span></div></div>
+    </div>
+  </div>
+
+  <div id="approvals" class="page">
+    <div class="section">
+      <h2>Approvals</h2>
+      <div id="liveApprovalsList"></div>
+      <div class="item" id="liveApprovalCard" onclick="openLiveLatest()"><span class="dot"></span><div><strong id="liveApprovalTitle">Loading live approval…</strong><span id="liveApprovalMeta">Checking Sheet Engine</span></div></div>
+      <div class="item" onclick="openModal('RFI-DEMO-001')"><span class="dot"></span><div><strong>RFI-DEMO-001</strong><span>Project issue approval required</span></div></div>
+      <div class="item" onclick="openModal('DR-DEMO-001')"><span class="dot"></span><div><strong>Daily Report</strong><span>Client issue approval required</span></div></div>
+    </div>
+  </div>
+
+  <div id="search" class="page">
+    <div class="section">
+      <h2>Search ORVENOR</h2>
+      <div class="tell" style="margin:0">
+        <input id="searchInput" placeholder="Search jobs, sheets, actions…" style="width:100%">
+        <button class="btn" style="margin-top:10px;width:100%" onclick="doSearch()">Search</button>
+        <div id="searchResults" class="small" style="margin-top:12px">Try “hose”, “RFI”, “generator” or “invoice”.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="more" class="page">
+    <div class="section">
+      <h2>ORVENOR V1</h2>
+      <div class="card"><strong>Products</strong><div class="small" style="margin-top:8px">Solo · Ops · Professional · Intelligence · Enterprise</div></div>
+      <div class="card" style="margin-top:10px"><strong>Safety rule</strong><div class="small" style="margin-top:8px">External messages, money, technical approvals and consequential decisions stay human-controlled.</div></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="active" onclick="nav('today',this,'Today','What needs your attention, without the noise.')"><span class="ico">⌂</span>Today</button>
+    <button onclick="nav('sheets',this,'Sheets','Create, review and reuse operational work.')"><span class="ico">▤</span>Sheets</button>
+    <button onclick="nav('approvals',this,'Approvals','Only the decisions that need you.')"><span class="ico">✓</span>Approvals</button>
+    <button onclick="nav('search',this,'Search','ORVENOR never forgets.')"><span class="ico">⌕</span>Search</button>
+    <button onclick="nav('more',this,'ORVENOR','Your operating layer.')"><span class="ico">•••</span>More</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="sheetmodal">
+    <div class="sheethead"><div><div class="word" style="color:#081F2D;font-size:13px">ORVENOR</div><h2 id="modalTitle" style="margin:6px 0 0"></h2></div><button onclick="closeModal()" style="border:0;background:#eee;border-radius:50%;width:32px;height:32px">×</button></div>
+    <div id="modalBody" style="margin-top:12px"></div>
+    <div class="approve"><button class="btn secondary" onclick="reviseLive()">Return for revision</button><button class="btn" onclick="approveLive()">Approve</button></div>
+    <div class="small" id="approvalSafety" style="margin-top:10px">Approval changes review state only. Nothing is sent externally.</div>
+  </div>
+</div>
+
+<script>
+const sheetData={
+'DR-DEMO-001':{title:'Professional Daily Report',rows:[['Shift','06:00–18:00'],['Personnel','8'],['Transfer','392 m³ @ avg 54 m³/h'],['Stoppage','30 min access stop'],['Next action','Verify hose route']]},
+'VAR-DEMO-001':{title:'Variation Evidence Sheet',rows:[['Change','Permit/access delay'],['Evidence','Daily log · permit record · email'],['Impact','Lost productive time / shift compression'],['Mitigation','Crew retained on standby'],['Gap','Confirm exact instruction source']]},
+'TQ-DEMO-001':{title:'Technical Query',rows:[['Reference','TQ-DEMO-001'],['Subject','Temporary hose routing'],['Question','Confirm route/support acceptability'],['Impact','Mobilisation waiting on response'],['State','Engineering review required']]},
+'RFI-DEMO-001':{title:'Request for Information',rows:[['Reference','RFI-DEMO-001'],['Subject','Tie-in point confirmation'],['Reason','Two possible nozzles shown'],['Due','18 Sep 2026'],['Cost impact','Not assessed']]},
+'SOLO-INVOICE':{title:'Solo Invoice Preparation',rows:[['Labour','7 hours'],['Materials','£86'],['Final total','£420'],['Customer message','Prepared'],['Send state','Nothing sent automatically']]}
+};
+
+function nav(id,btn,title,sub){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active')); btn.classList.add('active');
+ document.getElementById('heroTitle').textContent=title;document.getElementById('heroSub').textContent=sub;
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function preset(t){document.getElementById('commandInput').value=t;runCommand()}
+function fakeVoice(){document.getElementById('commandInput').value='Turn today’s shift notes into a daily report';runCommand()}
+async function runCommand(){
+ let v=document.getElementById('commandInput').value.trim(); if(!v)return;
+ let s=document.getElementById('commandStatus');
+ s.textContent='Sending securely to ORVENOR…';
+ let product='Professional';
+ let l=v.toLowerCase();
+ if(l.includes('invoice')||l.includes('customer')||l.includes('job')) product='Solo';
+ let sheetType='General Request';
+ if(l.includes('rfi')) sheetType='RFI';
+ else if(l.includes('tq')||l.includes('technical query')) sheetType='Technical Query';
+ else if(l.includes('daily report')||l.includes('shift report')) sheetType='Daily Report';
+ else if(l.includes('variation')) sheetType='Variation Evidence Sheet';
+ else if(l.includes('hose register')) sheetType='Hose Register';
+ else if(l.includes('equipment register')) sheetType='Equipment Register';
+ else if(l.includes('meeting')||l.includes('minutes')) sheetType='Meeting Minutes & Actions';
+ else if(l.includes('action log')||l.includes('open actions')) sheetType='Action Log';
+ else if(l.includes('completion')||l.includes('finish job')||l.includes('finished the job')) sheetType='Job Completion';
+ try {
+   const res = await fetch('https://hook.eu1.make.com/daxdbp0b9qqle18mr1ih1y7vr12ln5uk', {
+     method:'POST',
+     headers:{'Content-Type':'application/json'},
+     body:JSON.stringify({
+       command:v,
+       productLine:product,
+       inputType:'Text',
+       synthetic:true,
+       source:'ORVENOR PWA V4',
+       sheetType:sheetType,
+       projectRef:'Synthetic Industrial Project'
+     })
+   });
+   if(!res.ok) throw new Error('HTTP '+res.status);
+   const data = await res.json().catch(()=>({}));
+   s.textContent = data.message || 'Command processed by ORVENOR and converted into a review-controlled sheet.';
+   document.getElementById('commandInput').value='';
+ } catch(e) {
+   s.textContent='Connection failed. Your command was not sent. Check internet access and try again.';
+ }
+}
+function openModal(k){
+ let d=sheetData[k]||sheetData['DR-DEMO-001'];document.getElementById('modalTitle').textContent=d.title;
+ document.getElementById('modalBody').innerHTML=d.rows.map(r=>`<div class="row"><span>${r[0]}</span><strong style="text-align:right">${r[1]}</strong></div>`).join('');
+ document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+function approve(){openLiveLatest()}
+function doSearch(){let q=document.getElementById('searchInput').value.toLowerCase(),r='No demo match found.';
+ if(q.includes('hose'))r='Hose Register · H-003 review due 15 Oct 2026';
+ if(q.includes('rfi'))r='RFI-DEMO-001 · Tie-in point confirmation · Ready for Review';
+ if(q.includes('generator'))r='EQ-003 Generator · Service Due · 20 Sep 2026';
+ if(q.includes('invoice'))r='Solo invoice preparation · £420 · Waiting approval';
+ document.getElementById('searchResults').textContent=r;
+}
+
+const REVIEW_API='https://hook.eu1.make.com/b0jg2ka8uswovzmeb3w8qg0fqggp7t1o';
+let liveLatest=null;
+
+async function loadLiveLatest(){
+  try {
+    const res=await fetch(REVIEW_API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'latest'})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    liveLatest=data;
+    const title=data.sheet||'Latest ORVENOR sheet';
+    const meta=(data.status||'Unknown')+' · '+(data.productLine||'ORVENOR')+(data.project?' · '+data.project:'');
+    const a=document.getElementById('liveLatestTitle'), b=document.getElementById('liveLatestMeta');
+    if(a)a.textContent=title;if(b)b.textContent=meta;
+    const c=document.getElementById('liveApprovalTitle'), d=document.getElementById('liveApprovalMeta');
+    if(c)c.textContent=title;
+    if(d)d.textContent=(data.approvalRequired==='true'||data.approvalRequired===true?'Approval required · ':'')+(data.status||'Ready for Review');
+  } catch(e) {
+    ['liveLatestTitle','liveApprovalTitle'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Live backend unavailable';});
+    ['liveLatestMeta','liveApprovalMeta'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Retry when online';});
+  }
+}
+
+function openLiveLatest(){
+ if(!liveLatest){loadLiveLatest();return;}
+ document.getElementById('modalTitle').textContent=liveLatest.sheet||'ORVENOR Sheet';
+ const rows=[
+   ['Sheet ID',liveLatest.sheetId||'—'],
+   ['Product',liveLatest.productLine||'—'],
+   ['Status',liveLatest.status||'—'],
+   ['Project/Job',liveLatest.project||'—'],
+   ['Summary',liveLatest.summary||'—'],
+   ['Next action',liveLatest.nextAction||'—']
+ ];
+ document.getElementById('modalBody').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><strong style="text-align:right;max-width:62%">${r[1]}</strong></div>`).join('');
+ document.getElementById('overlay').classList.add('show');
+}
+
+async function reviewAction(action){
+ if(!liveLatest||!liveLatest.recordId)return;
+ const safety=document.getElementById('approvalSafety');
+ safety.textContent=action==='approve'?'Recording approval…':'Returning for revision…';
+ try {
+   const res=await fetch(REVIEW_API,{
+     method:'POST',
+     headers:{'Content-Type':'application/json'},
+     body:JSON.stringify({action:action,recordId:liveLatest.recordId})
+   });
+   const data=await res.json();
+   safety.textContent=data.message||'Review state updated.';
+   await loadLiveLatest();
+   await loadLiveQueue();
+   setTimeout(closeModal,650);
+ } catch(e) {
+   safety.textContent='Update failed. Nothing changed.';
+ }
+}
+function approveLive(){reviewAction('approve')}
+function reviseLive(){reviewAction('revise')}
+
+async function loadLiveQueue(){
+  try{
+    const res=await fetch(REVIEW_API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'queue'})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const records=(data.records||[]).map(r=>({
+      recordId:r.id,
+      sheet:r.fields?.Sheet||'ORVENOR Sheet',
+      sheetId:r.fields?.['Sheet ID']||'',
+      productLine:r.fields?.['Product Line']||'',
+      project:r.fields?.['Project/Job Reference']||'',
+      status:r.fields?.Status||'',
+      summary:r.fields?.['AI Summary']||'',
+      nextAction:r.fields?.['Next Action']||'',
+      approvalRequired:r.fields?.['Approval Required']||false
+    }));
+    window.liveQueue=records;
+    renderQueue(records);
+    if(records.length){ liveLatest=records[0]; }
+  }catch(e){
+    const t=document.getElementById('liveTodayList');
+    const a=document.getElementById('liveApprovalsList');
+    if(t)t.innerHTML='<div class="small">Live queue unavailable — retry when online.</div>';
+    if(a)a.innerHTML='<div class="small">Live queue unavailable — retry when online.</div>';
+  }
+}
+function renderQueue(records){
+  const today=document.getElementById('liveTodayList');
+  const approvals=document.getElementById('liveApprovalsList');
+  const itemHtml=(r,idx)=>`<div class="item" onclick="openQueueItem(${idx})">
+    <span class="dot ${r.status==='Approved'?'green':''}"></span>
+    <div><strong>${escapeHtml(r.sheet)}</strong><span>${escapeHtml(r.status||'Review')} · ${escapeHtml(r.productLine||'ORVENOR')}${r.project?' · '+escapeHtml(r.project):''}</span></div>
+  </div>`;
+  if(today) today.innerHTML=records.length?records.slice(0,5).map(itemHtml).join(''):'<div class="small">No live review items.</div>';
+  const needing=records.filter(r=>r.approvalRequired===true || r.approvalRequired==='true');
+  if(approvals) approvals.innerHTML=needing.length?needing.map((r)=>itemHtml(r,records.indexOf(r))).join(''):'<div class="small">No approvals waiting.</div>';
+}
+function escapeHtml(v){
+  return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function openQueueItem(idx){
+  if(!window.liveQueue||!window.liveQueue[idx])return;
+  liveLatest=window.liveQueue[idx];
+  openLiveLatest();
+}
+
+document.addEventListener('DOMContentLoaded',loadLiveLatest);
+document.addEventListener('DOMContentLoaded',loadLiveQueue);
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>
