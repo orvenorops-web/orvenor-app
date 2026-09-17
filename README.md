@@ -1,20 +1,11 @@
-# ORVENOR Phone App — GitHub Pages Build
+# ORVENOR PWA V7 — Review Control
 
-This package is ready to upload to the root of a GitHub repository and publish with GitHub Pages.
+V7 adds:
+1. Full approval detail screen with structured content and evidence.
+2. Live attention/approval counters.
+3. Approval filters for Ready / Revision.
+4. Mandatory revision notes passed to the backend.
+5. Live queue search.
+6. Sync status plus local review activity history.
 
-## Publish
-1. Create a new GitHub repository named `orvenor-app`.
-2. Upload every file in this folder to the repository root.
-3. In GitHub: Settings -> Pages.
-4. Under Build and deployment choose:
-   - Source: Deploy from a branch
-   - Branch: main
-   - Folder: /(root)
-5. Save.
-6. Open the Pages URL on iPhone Safari.
-7. Tap Share -> Add to Home Screen.
-
-## Safety
-This prototype uses synthetic/test data only.
-App approvals update internal ORVENOR Sheet Engine review state only.
-No external emails, invoices, payments, publications, or technical issues are sent by these app controls.
+Safety: approve/revise only changes review state. No external send/payment/technical approval action is triggered.

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#081F2D">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>ORVENOR V6</title>
+<title>ORVENOR V7</title>
 <style>
 :root{
   --navy:#081F2D;--navy2:#0E2E40;--gold:#D4A017;--bg:#F4F6F8;--card:#fff;--text:#14212B;
@@ -47,12 +47,31 @@
 .row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
 .approve{display:flex;gap:8px;margin-top:14px}.approve button{flex:1}
 .secondary{background:#EEF2F4;color:#25313a}
+
+.syncbar{margin:10px 14px 0;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)}
+.syncbar button{border:0;background:transparent;color:var(--navy);font-weight:700;padding:4px 0}
+.filterbar{display:flex;gap:7px;overflow:auto;margin-bottom:10px}
+.filterbtn{border:1px solid var(--line);background:#fff;color:var(--muted);padding:8px 10px;border-radius:999px;font-size:12px;white-space:nowrap}
+.filterbtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.detailblock{background:#F8FAFC;border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+.detailblock h3{font-size:12px;margin:0 0 7px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.detailblock p{font-size:13px;line-height:1.45;margin:0;white-space:pre-wrap;word-break:break-word}
+.statuspill{display:inline-block;font-size:11px;font-weight:800;padding:6px 9px;border-radius:999px;background:#FEF3C7;color:#92400E;margin-top:8px}
+.statuspill.approved{background:#DCFCE7;color:#166534}
+.statuspill.progress{background:#DBEAFE;color:#1D4ED8}
+.revisionbox{margin-top:14px}
+.revisionbox textarea{width:100%;min-height:78px;border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;resize:vertical;background:#FAFAFA}
+.audititem{padding:10px 0;border-bottom:1px solid var(--line)}
+.audititem:last-child{border-bottom:0}
+.audititem strong{display:block;font-size:13px}.audititem span{font-size:11px;color:var(--muted)}
+.empty{font-size:12px;color:var(--muted);padding:8px 0}
+.inlinecount{font-weight:800;color:var(--navy)}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <div class="brand"><div><div class="word">ORVENOR</div><div class="tag">People do the work. ORVENOR runs the rest.</div></div><div class="badge">V6 LIVE QUEUE</div></div>
+    <div class="brand"><div><div class="word">ORVENOR</div><div class="tag">People do the work. ORVENOR runs the rest.</div></div><div class="badge" onclick="refreshAll()" style="cursor:pointer">V7 REVIEW</div></div>
     <div class="hero"><h1 id="heroTitle">Today</h1><p id="heroSub">What needs your attention, without the noise.</p></div>
   </div>
 
@@ -65,11 +84,12 @@
       </div>
       <div class="small" id="commandStatus" style="margin-top:8px">Try: “Raise an RFI about the tie-in point.”</div>
     </div>
+    <div class="syncbar"><span id="syncStatus">Connecting to ORVENOR…</span><button onclick="refreshAll()">Refresh</button></div>
 
     <div class="section">
       <div class="grid">
-        <div class="card"><div class="metric">4</div><div class="small">Needs attention</div></div>
-        <div class="card"><div class="metric">3</div><div class="small">Waiting approval</div></div>
+        <div class="card"><div class="metric" id="needsCount">0</div><div class="small">Needs attention</div></div>
+        <div class="card"><div class="metric" id="approvalCount">0</div><div class="small">Waiting approval</div></div>
       </div>
     </div>
 
@@ -115,6 +135,11 @@
   <div id="approvals" class="page">
     <div class="section">
       <h2>Approvals</h2>
+      <div class="filterbar">
+        <button class="filterbtn active" data-filter="all" onclick="setApprovalFilter('all',this)">All</button>
+        <button class="filterbtn" data-filter="Ready for Review" onclick="setApprovalFilter('Ready for Review',this)">Ready</button>
+        <button class="filterbtn" data-filter="In Progress" onclick="setApprovalFilter('In Progress',this)">Revision</button>
+      </div>
       <div id="liveApprovalsList"></div>
       <div class="item" id="liveApprovalCard" onclick="openLiveLatest()"><span class="dot"></span><div><strong id="liveApprovalTitle">Loading live approval…</strong><span id="liveApprovalMeta">Checking Sheet Engine</span></div></div>
       <div class="item" onclick="openModal('RFI-DEMO-001')"><span class="dot"></span><div><strong>RFI-DEMO-001</strong><span>Project issue approval required</span></div></div>
@@ -138,6 +163,7 @@
       <h2>ORVENOR V1</h2>
       <div class="card"><strong>Products</strong><div class="small" style="margin-top:8px">Solo · Ops · Professional · Intelligence · Enterprise</div></div>
       <div class="card" style="margin-top:10px"><strong>Safety rule</strong><div class="small" style="margin-top:8px">External messages, money, technical approvals and consequential decisions stay human-controlled.</div></div>
+      <div class="card" style="margin-top:10px"><strong>Review activity</strong><div id="reviewHistory" style="margin-top:6px"><div class="empty">No review actions on this device yet.</div></div></div>
     </div>
   </div>
 
@@ -154,6 +180,7 @@
   <div class="sheetmodal">
     <div class="sheethead"><div><div class="word" style="color:#081F2D;font-size:13px">ORVENOR</div><h2 id="modalTitle" style="margin:6px 0 0"></h2></div><button onclick="closeModal()" style="border:0;background:#eee;border-radius:50%;width:32px;height:32px">×</button></div>
     <div id="modalBody" style="margin-top:12px"></div>
+    <div class="revisionbox"><label class="small" for="revisionNote">Revision note</label><textarea id="revisionNote" placeholder="What needs changing? Required when returning for revision."></textarea></div>
     <div class="approve"><button class="btn secondary" onclick="reviseLive()">Return for revision</button><button class="btn" onclick="approveLive()">Approve</button></div>
     <div class="small" id="approvalSafety" style="margin-top:10px">Approval changes review state only. Nothing is sent externally.</div>
   </div>
@@ -203,7 +230,7 @@ async function runCommand(){
        productLine:product,
        inputType:'Text',
        synthetic:true,
-       source:'ORVENOR PWA V4',
+       source:'ORVENOR PWA V7',
        sheetType:sheetType,
        projectRef:'Synthetic Industrial Project'
      })
@@ -223,12 +250,17 @@ function openModal(k){
 }
 function closeModal(){document.getElementById('overlay').classList.remove('show')}
 function approve(){openLiveLatest()}
-function doSearch(){let q=document.getElementById('searchInput').value.toLowerCase(),r='No demo match found.';
- if(q.includes('hose'))r='Hose Register · H-003 review due 15 Oct 2026';
- if(q.includes('rfi'))r='RFI-DEMO-001 · Tie-in point confirmation · Ready for Review';
- if(q.includes('generator'))r='EQ-003 Generator · Service Due · 20 Sep 2026';
- if(q.includes('invoice'))r='Solo invoice preparation · £420 · Waiting approval';
- document.getElementById('searchResults').textContent=r;
+function doSearch(){
+ const q=document.getElementById('searchInput').value.trim().toLowerCase();
+ const box=document.getElementById('searchResults');
+ if(!q){box.textContent='Type something to search.';return;}
+ const rows=(window.liveQueue||[]).filter(r=>[r.sheet,r.sheetId,r.productLine,r.project,r.status,r.summary,r.nextAction,r.structuredData,r.sourceEvidence].join(' ').toLowerCase().includes(q));
+ if(rows.length){
+   box.innerHTML=rows.map(r=>`<div class="item" style="margin-top:8px" onclick="openRecordById('${r.recordId}')"><span class="dot"></span><div><strong>${escapeHtml(r.sheet)}</strong><span>${escapeHtml(r.status||'')} · ${escapeHtml(r.project||'')}</span></div></div>`).join('');
+   return;
+ }
+ const demos={hose:'Hose Register · H-003 review due 15 Oct 2026',rfi:'RFI-DEMO-001 · Tie-in point confirmation · Ready for Review',generator:'EQ-003 Generator · Service Due · 20 Sep 2026',invoice:'Solo invoice preparation · £420 · Waiting approval'};
+ box.textContent=demos[q]||'No matching live review item found.';
 }
 
 const REVIEW_API='https://hook.eu1.make.com/b0jg2ka8uswovzmeb3w8qg0fqggp7t1o';
@@ -257,22 +289,39 @@ async function loadLiveLatest(){
   }
 }
 
+function statusClass(status){
+  if(status==='Approved')return 'approved';
+  if(status==='In Progress')return 'progress';
+  return '';
+}
 function openLiveLatest(){
  if(!liveLatest){loadLiveLatest();return;}
  document.getElementById('modalTitle').textContent=liveLatest.sheet||'ORVENOR Sheet';
- const rows=[
+ const status=escapeHtml(liveLatest.status||'Unknown');
+ const basics=[
    ['Sheet ID',liveLatest.sheetId||'—'],
    ['Product',liveLatest.productLine||'—'],
-   ['Status',liveLatest.status||'—'],
    ['Project/Job',liveLatest.project||'—'],
-   ['Summary',liveLatest.summary||'—'],
-   ['Next action',liveLatest.nextAction||'—']
+   ['Work date',liveLatest.workDate||'—'],
+   ['Revision',liveLatest.revision||'—']
  ];
- document.getElementById('modalBody').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><strong style="text-align:right;max-width:62%">${r[1]}</strong></div>`).join('');
+ let html=`<span class="statuspill ${statusClass(liveLatest.status)}">${status}</span>`;
+ html+=basics.map(r=>`<div class="row"><span>${r[0]}</span><strong style="text-align:right;max-width:62%">${escapeHtml(r[1])}</strong></div>`).join('');
+ if(liveLatest.summary) html+=`<div class="detailblock"><h3>ORVENOR summary</h3><p>${escapeHtml(liveLatest.summary)}</p></div>`;
+ if(liveLatest.structuredData) html+=`<div class="detailblock"><h3>Prepared sheet content</h3><p>${escapeHtml(liveLatest.structuredData)}</p></div>`;
+ if(liveLatest.sourceEvidence) html+=`<div class="detailblock"><h3>Source / evidence</h3><p>${escapeHtml(liveLatest.sourceEvidence)}</p></div>`;
+ if(liveLatest.nextAction) html+=`<div class="detailblock"><h3>Next action</h3><p>${escapeHtml(liveLatest.nextAction)}</p></div>`;
+ if(liveLatest.approvedBy||liveLatest.approvedAt) html+=`<div class="detailblock"><h3>Approval audit</h3><p>${escapeHtml(liveLatest.approvedBy||'—')}${liveLatest.approvedAt?' · '+escapeHtml(liveLatest.approvedAt):''}</p></div>`;
+ document.getElementById('modalBody').innerHTML=html;
+ document.getElementById('revisionNote').value='';
+ const isReviewable=liveLatest.status!=='Approved';
+ document.querySelector('.approve').style.display=isReviewable?'flex':'none';
+ document.querySelector('.revisionbox').style.display=isReviewable?'block':'none';
+ document.getElementById('approvalSafety').textContent='Approval changes review state only. Nothing is sent externally.';
  document.getElementById('overlay').classList.add('show');
 }
 
-async function reviewAction(action){
+async function reviewAction(action,note=''){
  if(!liveLatest||!liveLatest.recordId)return;
  const safety=document.getElementById('approvalSafety');
  safety.textContent=action==='approve'?'Recording approval…':'Returning for revision…';
@@ -280,10 +329,12 @@ async function reviewAction(action){
    const res=await fetch(REVIEW_API,{
      method:'POST',
      headers:{'Content-Type':'application/json'},
-     body:JSON.stringify({action:action,recordId:liveLatest.recordId})
+     body:JSON.stringify({action:action,recordId:liveLatest.recordId,note:note})
    });
+   if(!res.ok)throw new Error('HTTP '+res.status);
    const data=await res.json();
    safety.textContent=data.message||'Review state updated.';
+   addReviewHistory(action,liveLatest,note);
    await loadLiveLatest();
    await loadLiveQueue();
    setTimeout(closeModal,650);
@@ -292,7 +343,50 @@ async function reviewAction(action){
  }
 }
 function approveLive(){reviewAction('approve')}
-function reviseLive(){reviewAction('revise')}
+function reviseLive(){
+ const note=document.getElementById('revisionNote').value.trim();
+ if(!note){document.getElementById('approvalSafety').textContent='Add a revision note first so the person fixing it knows what to change.';return;}
+ reviewAction('revise',note)
+}
+
+let approvalFilter='all';
+function setApprovalFilter(filter,btn){
+ approvalFilter=filter;
+ document.querySelectorAll('.filterbtn').forEach(x=>x.classList.remove('active'));
+ if(btn)btn.classList.add('active');
+ renderQueue(window.liveQueue||[]);
+}
+function updateCounters(records){
+ const needs=records.filter(r=>r.status==='Ready for Review'||r.status==='In Progress').length;
+ const approvals=records.filter(r=>r.approvalRequired===true||r.approvalRequired==='true').length;
+ const a=document.getElementById('needsCount'),b=document.getElementById('approvalCount');
+ if(a)a.textContent=needs;if(b)b.textContent=approvals;
+}
+function updateSyncStatus(ok=true){
+ const el=document.getElementById('syncStatus');if(!el)return;
+ const t=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+ el.textContent=ok?`Live · synced ${t}`:'Offline / backend unavailable';
+}
+async function refreshAll(){
+ const el=document.getElementById('syncStatus');if(el)el.textContent='Refreshing ORVENOR…';
+ await Promise.all([loadLiveLatest(),loadLiveQueue()]);
+}
+function addReviewHistory(action,record,note){
+ const history=JSON.parse(localStorage.getItem('orvenorReviewHistory')||'[]');
+ history.unshift({at:new Date().toISOString(),action,sheet:record.sheet||'ORVENOR Sheet',sheetId:record.sheetId||'',note:note||''});
+ localStorage.setItem('orvenorReviewHistory',JSON.stringify(history.slice(0,12)));
+ renderReviewHistory();
+}
+function renderReviewHistory(){
+ const box=document.getElementById('reviewHistory');if(!box)return;
+ const history=JSON.parse(localStorage.getItem('orvenorReviewHistory')||'[]');
+ if(!history.length){box.innerHTML='<div class="empty">No review actions on this device yet.</div>';return;}
+ box.innerHTML=history.map(h=>`<div class="audititem"><strong>${h.action==='approve'?'Approved':'Returned for revision'} · ${escapeHtml(h.sheet)}</strong><span>${new Date(h.at).toLocaleString()}${h.note?' · '+escapeHtml(h.note):''}</span></div>`).join('');
+}
+function openRecordById(id){
+ const rec=(window.liveQueue||[]).find(r=>r.recordId===id);if(!rec)return;
+ liveLatest=rec;openLiveLatest();
+}
 
 async function loadLiveQueue(){
   try{
@@ -308,32 +402,42 @@ async function loadLiveQueue(){
       sheet:r.fields?.Sheet||'ORVENOR Sheet',
       sheetId:r.fields?.['Sheet ID']||'',
       productLine:r.fields?.['Product Line']||'',
-      project:r.fields?.['Project/Job Reference']||'',
+      project:r.fields?.['Project / Job Reference']||'',
       status:r.fields?.Status||'',
+      structuredData:r.fields?.['Structured Data']||'',
       summary:r.fields?.['AI Summary']||'',
       nextAction:r.fields?.['Next Action']||'',
+      sourceEvidence:r.fields?.['Source / Evidence']||'',
+      workDate:r.fields?.['Created / Work Date']||'',
+      revision:r.fields?.Revision||'',
+      approvedBy:r.fields?.['Approved By']||'',
+      approvedAt:r.fields?.['Approved At']||'',
       approvalRequired:r.fields?.['Approval Required']||false
-    }));
+    })).sort((a,b)=>String(b.workDate||'').localeCompare(String(a.workDate||'')));
     window.liveQueue=records;
     renderQueue(records);
+    updateCounters(records);
+    updateSyncStatus(true);
     if(records.length){ liveLatest=records[0]; }
   }catch(e){
     const t=document.getElementById('liveTodayList');
     const a=document.getElementById('liveApprovalsList');
     if(t)t.innerHTML='<div class="small">Live queue unavailable — retry when online.</div>';
     if(a)a.innerHTML='<div class="small">Live queue unavailable — retry when online.</div>';
+    updateSyncStatus(false);
   }
 }
 function renderQueue(records){
   const today=document.getElementById('liveTodayList');
   const approvals=document.getElementById('liveApprovalsList');
   const itemHtml=(r,idx)=>`<div class="item" onclick="openQueueItem(${idx})">
-    <span class="dot ${r.status==='Approved'?'green':''}"></span>
-    <div><strong>${escapeHtml(r.sheet)}</strong><span>${escapeHtml(r.status||'Review')} · ${escapeHtml(r.productLine||'ORVENOR')}${r.project?' · '+escapeHtml(r.project):''}</span></div>
+    <span class="dot ${r.status==='Approved'?'green':r.status==='In Progress'?'':'red'}"></span>
+    <div style="flex:1"><strong>${escapeHtml(r.sheet)}</strong><span>${escapeHtml(r.status||'Review')} · ${escapeHtml(r.productLine||'ORVENOR')}${r.project?' · '+escapeHtml(r.project):''}</span></div>
   </div>`;
   if(today) today.innerHTML=records.length?records.slice(0,5).map(itemHtml).join(''):'<div class="small">No live review items.</div>';
-  const needing=records.filter(r=>r.approvalRequired===true || r.approvalRequired==='true');
-  if(approvals) approvals.innerHTML=needing.length?needing.map((r)=>itemHtml(r,records.indexOf(r))).join(''):'<div class="small">No approvals waiting.</div>';
+  let needing=records.filter(r=>r.approvalRequired===true || r.approvalRequired==='true');
+  if(approvalFilter!=='all')needing=needing.filter(r=>r.status===approvalFilter);
+  if(approvals) approvals.innerHTML=needing.length?needing.map((r)=>itemHtml(r,records.indexOf(r))).join(''):'<div class="small">No approvals in this filter.</div>';
 }
 function escapeHtml(v){
   return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -346,6 +450,9 @@ function openQueueItem(idx){
 
 document.addEventListener('DOMContentLoaded',loadLiveLatest);
 document.addEventListener('DOMContentLoaded',loadLiveQueue);
+document.addEventListener('DOMContentLoaded',renderReviewHistory);
+window.addEventListener('online',refreshAll);
+window.addEventListener('offline',()=>updateSyncStatus(false));
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
 </script>
 </body>
